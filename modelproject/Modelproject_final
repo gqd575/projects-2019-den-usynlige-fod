@@ -1,0 +1,833 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Introduction"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Taxes play an important role for every individual in the economy. The size of the tax payment affects the disposible income, and thus the (possible) consumption level. The government collects taxes in order to finance its expenditures. The literatture has estimated that an increase in the marginal tax rate induces people to work less. This implies that the government cannot set a too high marginal tax rate in order to maximize its revenue. In the end, both workers and the government benefit from an optimal tax system. In this project, we examine the change of behaviour of a worker due to a change in the marginal tax rate. \n",
+    "\n",
+    "In this project, we only consider changes on the intensive margin, i.e. how people adjust their work hours or/and effort due to changes in the marginal tax rate, and not if they change employment status due to a change in the marginal tax rate. Feldstein (1995) argues that taxable income as endogenous variable is better when estimating changes in behaviour due to changes in the marginal tax rate, since taxable income captures changes in hours worked and changes in work effort. We apply the same method as Feldstein (1995) and consider the change in taxable income from changes in the marginal tax rate. "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Model description"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "We consider the utility function given by \n",
+    "\n",
+    "$U_i = c_i - \\frac{\\alpha _i}{1+\\frac{1}{\\epsilon}} ( \\frac{z _i}{ \\alpha _i})^ {1+ \\frac{1}{\\epsilon}}$\n",
+    "\n",
+    "where $c_i$ denotes consumption of the individual, while $z_i$ denotes the taxable income of the individual. $\\alpha _i$ denotes the potential earnings level of the individual, and $\\epsilon$ denotes the elasticity of taxable income with respect to the net-of-tax rate. \n",
+    "\n",
+    "The consumption level is dependent of the taxable income. Thus, we consider the budget constraint given by\n",
+    "\n",
+    "$c_i = z_i - T(z_i)$\n",
+    "\n",
+    "where $T(z_i)$ is the tax payment. This implies that we assume that the individual uses all of his disposible income on consumption. The tax payment is given by \n",
+    "\n",
+    "$T(z_i) = m*z_i$ \n",
+    "\n",
+    "where $m$ is the tax rate chosen by the government. Since the tax rate is independent of earnings, we consider a proportional tax system.\n",
+    "\n",
+    "We want to maximize the utility of the individual subject to his budget constraint, i.e.\n",
+    "\n",
+    "$\\max\\limits_{z_i} U_i=c_i - \\frac{\\alpha _i}{1+\\frac{1}{\\epsilon}} ( \\frac{z _i}{ \\alpha _i})^ {1+ \\frac{1}{\\epsilon}}$ s.t. $c_i = z_i - T(z_i)$"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Solutions"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "First, we find the analytical solution. Thus, we find the optimal taxable income of the individual subject to the tax rate. \n",
+    "Second, we show the graphical solution. Here, we see the optimum of the indifference curve, the budget constraint and the optimum of the individual."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Analytical solution"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "We import the `sympy`-package in order to define the variables and parameters. Afterwards, we use the `.init_printing`-function, so the variables are written in a pretty way. Lastly, we define the variables and parameters."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# 1) Import sympy in order to write nice equations.\n",
+    "import sympy as sm\n",
+    "\n",
+    "# 2) Define that we want the variables are printed in a pretty way.\n",
+    "sm.init_printing(use_unicode=True)\n",
+    "\n",
+    "# 3) Define the different variables and parameters.\n",
+    "U    = sm.symbols('U')\n",
+    "c    = sm.symbols('c')\n",
+    "z    = sm.symbols('z')\n",
+    "eps  = sm.symbols('epsilon')\n",
+    "T_z  = sm.symbols('T(z)')\n",
+    "mtax = sm.symbols('m')\n",
+    "alp  = sm.symbols('alpha')"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "We define the different functions. In total, we consider three different functions: the utility function, the budget constraint and the tax payment. The last two functions are functions of taxable income. "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "image/png": "iVBORw0KGgoAAAANSUhEUgAAAIwAAAA/BAMAAADAsD3WAAAAMFBMVEX///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAv3aB7AAAAD3RSTlMAEM3dMol2mUQi71S7ZquvzkCXAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAC5ElEQVRYCc1UTWgTURCemE3STUwbCiLiQV1EikgRPIiKGHtQb4lCIwjFPUgFRSz152JJF8SzQhF7axFEioIBoUhByEHwIpJLexCEqGgPVYygiAeNM29/8tbMbnazETqw8+bNfN+38/a9fQAh7V1IPA+/tcDng2RHJNABKQ4XHv8g4buXgack029qRZXZuA5ljv2smF0F8SdsUFIE4ttYi7IrAUalaoP66hShzHttt6bpMNBsNht2sdO4IYeImR2z6McI22U314l7Y1lHHyfFJXwg9KLUb0SDreSSEwD3jnzCKLRMAqkAqiF8gzyZJbNI7QWydIVgs3CUhsPkyEyZkTzFgaxAL1Q/Pq8SeoocmSr864tiCOLeECip3BftX3AzXrin3Kx03hDpSbl42/0t7q645zLUjGeM2IJawfiVXCvk5VmA+AHAyyS9a1gGzxnyrHOcwtMymSDcfnzo1DebGMxRfyEsXQU4c5IIkbrZVgQ4K17tkincCdEKQgdqKCMon2XiPzsll9g4VYfstJLDmuuoiEPEEjySo29rqRLVXA04p9iD5Z1OG1QrnQZqbRfFXVmqiLS40a/jGDMvjW50lHlkTUF2yADI1jHu0taQ9wj6HuIQz3trLHqXRGUQ/S9QaD3LPtBOMpkJgCHY1MiBWo0gA8/wAr6kX6tAijbLy+xuEuPnvCBB8paMegi0IHAvjCWTLsIaDO4j2wkgboZgjnRPadpBTaO/eNpv4V4tSHmrm8dSqkOobGcApkzsB1PiU0p5L1OwuvkNkGGqXCrjI1OG2FWOw+T8ZBJjKwyDTfnJsAQ+ycps4bFOdqntJLAyDp4NYqtfbRlrL3AruE/MsqXk5f8mMy+9JWjY1o165Y8elNzCtcm0SmGinsq0rgJxiTTCNCKwPe0GFZ1zE7oTIqyrbspPhmvmKqItyvkSPZJxrgJlVXe0IwQ37Z81ggZS94zmowmY7O+9EAH40huZzeO6r9Bf55O7cAqBzIsAAAAASUVORK5CYII=\n",
+      "text/latex": [
+       "$$- \\frac{\\alpha \\left(\\frac{z}{\\alpha}\\right)^{1 + \\frac{1}{\\epsilon}}}{1 + \\frac{1}{\\epsilon}} + c$$"
+      ],
+      "text/plain": [
+       "           1    \n",
+       "       1 + ─    \n",
+       "           ε    \n",
+       "    ⎛z⎞         \n",
+       "  α⋅⎜─⎟         \n",
+       "    ⎝α⎠         \n",
+       "- ────────── + c\n",
+       "        1       \n",
+       "    1 + ─       \n",
+       "        ε       "
+      ]
+     },
+     "execution_count": 3,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# Define utility function.\n",
+    "utility = c - alp/(1+1/eps)*(z/alp)**(1+1/eps)\n",
+    "utility"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "image/png": "iVBORw0KGgoAAAANSUhEUgAAAIIAAAAUBAMAAACzEviQAAAAMFBMVEX///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAv3aB7AAAAD3RSTlMAiXYyIt1Uze+rmRC7ZkTTotXTAAAACXBIWXMAAA7EAAAOxAGVKw4bAAABoElEQVQ4EZVUPUsDQRB9Yr6/TAIiiEII2GiTPyBck05IGkUL4WorQeXAQrEQG5FgI1amFoR0igimsBERUljYqNdY2GmjoIXOzO6eJKe5ZGBnZ9+8fbs7u3dADxZqKdJdD9w2SmX38Pv64A2Y0XDcassHD3LANnACrGpucjl4UhujhtAn8Ih03cB5HUQKBunaD7aQfgemELYM70wHvSoA8S/ARdkIIOqqsEMhXywp3O9jVcYmqWXm3WkgUecxYBQUWrajXKARh21dCJ6r1Dm8pXZRPG4CaV1Ko6DQLcRtovxpTzbDc9QacqUR2dPvHgRN0FE77HSWbYXQowan9tgN3rB7JTfgOGs7jlMzaKzJ0T9Gz4FMFF44EgXqzSnA6GWWU8CwLLygBtrzcyDjU0RkyUxVAE9B0KEWYCvc5/k5kHEllwDS6KykoIkazktC9LuUqtEobX9xfMKl28wqkj6FRnMPBf9cQcY2P/Y5eKapuN+gKKrX0goaFXJXF7ZM2rxOr5ImEdD7v6ykpxkw1aSvdND3120EvD9MyvKgPoOuf7kfH8ZV2TmCFXYAAAAASUVORK5CYII=\n",
+      "text/latex": [
+       "$$c = - T(z) + z$$"
+      ],
+      "text/plain": [
+       "c = -T(z) + z"
+      ]
+     },
+     "execution_count": 4,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# Define budget constraint.\n",
+    "budget_constraint = sm.Eq(c, z - T_z)\n",
+    "budget_constraint"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "image/png": "iVBORw0KGgoAAAANSUhEUgAAAGEAAAAUBAMAAABvx07iAAAAMFBMVEX///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAv3aB7AAAAD3RSTlMAIu+7q82J3ZlmRDJUdhDTAJzgAAAACXBIWXMAAA7EAAAOxAGVKw4bAAABiElEQVQoFY1TMUvDQBh9SdM0adPQTRykLiI4FdRRVHBvBxU3s4iTUEERnALiXhcRRHpTO1pwELcMDo4FOzgG/4BFQUS0et8ldxbhaD/Ife/ee9/HXe4OUDGZoDNFaIDxulB9W9sOYFQSh1XSOCVtBzDrcBrIpk6/JiVNtoByCJfhQhr2JNDkO6AZoRhjXxqeJdDkDlCNkYdRl4Ysk0ibZ0kphnxozxUacAgNR2t1qtdtPbJUB4wPkjMNwF96OgFcsfWdDYotkoL5rv/NvOlU544vonMRrxC/2FPrIx4oRIcw3uH2Ux2wBsSbjMabmDv6hP7C9z/hDWBVOEU694qeoiK/wuf/K+D14dRhdgGhi+PgPloV7vmHvOiwe0RxQIRTQy7AdSlOdHEcnKadeyH4gSY7J2saZoAXhlMjSnRgOSbFDoHb86tj3jKg+VCUGZrApp3q9uLPOl+hWEvozjAg2xlyE2wDPeDhEomuVHVLJhQ1Aox9E1WfTCmBI2+7qpAvSlYqQQ/GfLW/QipanbQTVBAAAAAASUVORK5CYII=\n",
+      "text/latex": [
+       "$$T(z) = m z$$"
+      ],
+      "text/plain": [
+       "T(z) = m⋅z"
+      ]
+     },
+     "execution_count": 5,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# Define tax payment.\n",
+    "taxpay = sm.Eq(T_z, mtax*z)\n",
+    "taxpay"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "In the next step, we want to substitute the tax payment into the budget constraint."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "image/png": "iVBORw0KGgoAAAANSUhEUgAAAHUAAAAPBAMAAAAok50oAAAAMFBMVEX///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAv3aB7AAAAD3RSTlMAiXYyIt1Uze+rmRC7ZkTTotXTAAAACXBIWXMAAA7EAAAOxAGVKw4bAAABIElEQVQoFWNgoBtgUyDfKmrqFVIywO6Qh1OcNBUe6jxgYHjax3wBrAZuL0TENYG9ACguXg4CVcimCJxR4P70gK2BgfuQ1hqIBEwvVKSRgTMBWQeczZwQzsDykYH3AwM3A8sBiDBcL1iE6zdcMYyxPRQEirm5/zGw/WbgBGmz2QAkGMvLS9vLyyeA1YFEOEBS2AHbBwauAAYOBQYGPoh6BgaYvRCR/QIQjaJgyyKRTeEqYGAVYHjvsIEhEyYM1wsW4b/AwJAAk0KlOQQY9j9gWM6SwLaAgRMiBdMLEeGawLDLAFUPjOf/gOE+A0MhI4PpxUtxqHqhIoJ3FWCK0einDAyaDAxZlxkW8LY/gMjB7EWIoOnBw4XpxaMEpxS3A5IUAIB+RbPzugHOAAAAAElFTkSuQmCC\n",
+      "text/latex": [
+       "$$c = - m z + z$$"
+      ],
+      "text/plain": [
+       "c = -m⋅z + z"
+      ]
+     },
+     "execution_count": 6,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# 1) Isolate T_z in the tax payment (this is done already, but to make sure, we run this line of code).\n",
+    "tax_solve = sm.solve(taxpay, T_z)\n",
+    "\n",
+    "# 2) Define that we want the tax payment substituted into the budget constraint.\n",
+    "budget_constraint_sub = budget_constraint.subs(T_z, tax_solve[0])\n",
+    "\n",
+    "# 3) Ensure that the budget constraint is correct after the substitution. \n",
+    "budget_constraint_sub\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Now, we want to substitute the budget constraint into the utility function. This is done in the same way as before. "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "image/png": "iVBORw0KGgoAAAANSUhEUgAAAOUAAAA/BAMAAADtQhJsAAAAMFBMVEX///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAv3aB7AAAAD3RSTlMAEM3dMol2mUQi71S7ZquvzkCXAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAEGElEQVRYCeVXXWgUVxQ+m53s7GazcRBEbMVsV5EURKRSihbp6oMWpGQruIIQ3SJEKRRFqT7UxgHx1QbyoKWFqOAffTBQaEUQx5dWQSEvPhgQV6QR1OIqQpOXruecmTt3Zr2z2Zi7kwcP7Lnnnvvd77vnzsydWYBZ2qNZ4jXAT1zWQNIKhZGXqHUybGdkDK2R9DFpQpY1qywcr6bzPmlu/m+My9XvvhSUKQ7c6+mIZFtaw6dPV0kANXsKhXOFlbCgXq/XKKXdOiykHPnoNPoBIo+jzsMk9MO9CvokyWfPoAOHXLss85KZPySfOgCQOfR/BUMHf22zTtRBJZt9jTybwz77jdvT7LvGiPA0bKRmAzk2h7yxgmPtrt9Cysw/1x1iPkqObZh89yQvyM1o9BPElTLOkTR8S05ad1HGOqLyXptpDgbJfmJlP5MZ0Ho9R+zE5Qzt3B1fAYP+YrCnOz4P8HeKqlodZB61gz3NsYlP5cFOIv0Mf3TI1esYjFLl7bIuB2Dn18QeX529JYDdXFRIs3+4XUUi74Jx1GT+50GVhvs2ODT32KxC7phhIVHokeSHde7sEQzbH4ybZRoLlSbPoYhpetJdNvGUdwAVvZLi1iyDV2dGu69GmCXMJ+2eCrYJ972mBjZkf23oK7s9w8q0cQbTRyHXZwPkqhi3aB/PhMuexSLyatQzTP8G6YvYJItqCGX/CA/lDoT7sucBlw3RpvEtI8dEtBCDaTAIcU/kFG2DZlK9azhRAFPE+IGCCVNZXHEfLKpZkHHUCM4KKg8yEgkVQNbssNW4qwCnvqt8PwampQZwVlCl19tfYWKvhKZ3/Tw4mS7f8jICyJpm5CWQ86MjQbV08IiDqLsS2dn9F/Tug2teRgBZM5eXuNlHgsoCfko+lwxbk3kYLcFDLyOArIkfywvXkuGXFb+8WnNEta1QWF8ouK8D4yZlLuGDsJzIPilavTbcsIAP7gCQNY0agd/VxPLhJDOgpm83AA4BXPD6AjhLzU0+nQwEVbbKucDeAn5SfQrp6YQLFkDWTK+RDE2jLY8Vw4LqT4AqDgfuITgPiSkw87+4swSQNVu/h36P1jQ2DOyxcXiHhGSmIFeDjlLJTYU0+TSX0CZRE00TJvpo5nE5HfcvVYXsj0U35WmaT1/9C9DhJd2hZr6Jppg289nHyBGBn7FVaS4Jz4o+40PAcniW6F2zROS3Kk1/0AtuNyZU/URemX3yQmiKiw/QimZL7+zuYZUmwP5305zLt4lKUxzX6kVqyL5d56kvJjXwNqN4W7MZWs/Y/GkGXkL8L01PPVEs81cnrkg+n1HL05Z/T+ocurJ63N2zGPfWv0jzoem/hIwnFX8hcQXHxakflyDqrNpejFHNlXoduyIAfjvFbosHK/o03wAPCgS7+8K5GAAAAABJRU5ErkJggg==\n",
+      "text/latex": [
+       "$$- \\frac{\\alpha \\left(\\frac{z}{\\alpha}\\right)^{1 + \\frac{1}{\\epsilon}}}{1 + \\frac{1}{\\epsilon}} + z \\left(- m + 1\\right)$$"
+      ],
+      "text/plain": [
+       "           1             \n",
+       "       1 + ─             \n",
+       "           ε             \n",
+       "    ⎛z⎞                  \n",
+       "  α⋅⎜─⎟                  \n",
+       "    ⎝α⎠                  \n",
+       "- ────────── + z⋅(-m + 1)\n",
+       "        1                \n",
+       "    1 + ─                \n",
+       "        ε                "
+      ]
+     },
+     "execution_count": 7,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# 1) Isolate c in the budget constraint (this is done already, but to make sure, we run this line of code).\n",
+    "budget_constraint_solve = sm.solve(budget_constraint_sub, c)\n",
+    "\n",
+    "# 2) Define that we want the budget constraint substituted into the utility function.\n",
+    "utility_sub = utility.subs(c, budget_constraint_solve[0])\n",
+    "\n",
+    "# 3) Ensure that the utility function is correct after the substitution. \n",
+    "utility_sub"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "We have concluded that the utility function is defined in the right way. After substitution, the utility function does only depend of the taxable income (and parameters, but these are fixed). \n",
+    "In order to find the optimal level of taxable income, we differentiate the utility function with respect to taxable income. Afterwards, we isolate for taxable income to derive the optimal level of taxable income ($z^*$). "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "image/png": "iVBORw0KGgoAAAANSUhEUgAAAHcAAAAXBAMAAADD483jAAAAMFBMVEX///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAv3aB7AAAAD3RSTlMAdt3NMolEmSIQ71S7ZqvC3fgDAAAACXBIWXMAAA7EAAAOxAGVKw4bAAABvUlEQVQ4Eb2Uv0tCURTHv/54vfd8ai+XlhCxhkZR2xr8E56DQS09BOcE9zL3SGgIGjKIoDa3VreWBoeglsitCAKjH+DWuedqvfvAlIbOcLjne7+fey6H+x7w/xF+tP/etNxkNpH3HLHnWY9d3tHOaqkQy7pY85iMjqcYu4zXgXfa1VQ4RPLvYV0AZgZ4IZsPvh1HWsPxHG8PyFIEDudsP7w8CUZAwEfSpnY2UtPBIZd9Q7g4z2WgyiKnytNu0q4ssA6Mri0769In4YZrnhttINr9gZ1r23x1rROpqHAsw6qEz4CrQBMI0gHDCLcXYXwg1pe1ClspVhnWaQg1jeqICxykReRN8xPWAPEOyVoulz3N5Xq0lNcOyyMZjnSAjXXaEfAorD70FCK2rNXOXrjlAJttcnmuDT2DoIOtepNpFZ5JscidZ7sEi9I7sIiDlouamCOFCnsHpvcQ2wlTC63KTk77Lh6AFTEKChXWHRa5M0r3XZ2eHIbX4Z0ykAQub7j4hvXnN3rVoQKrEpYGypOfJ1sbEvDBYz8Msy79MotbUvjgaJ3VCUl8kiJ88HQ/g1ELghNL8hzOU/+GyB1Iu1/NYGJwRz80MQAAAABJRU5ErkJggg==\n",
+      "text/latex": [
+       "$$\\left [ \\alpha \\left(- m + 1\\right)^{\\epsilon}\\right ]$$"
+      ],
+      "text/plain": [
+       "⎡          ε⎤\n",
+       "⎣α⋅(-m + 1) ⎦"
+      ]
+     },
+     "execution_count": 8,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# 1) Define that we want to calculate the derivate of the utility function with respect to taxable income.\n",
+    "foc = sm.diff(utility_sub, z)\n",
+    "\n",
+    "# 2) Define that we want to isolate for taxable income to derive z*.\n",
+    "z_star = sm.solve(foc, z)\n",
+    "\n",
+    "# 3) Define the optimal level of taxable income as a Python-function. \n",
+    "z_star_func = sm.lambdify((mtax, alp, eps), z_star)\n",
+    "\n",
+    "# 4) Examine the optimal level of taxable income.\n",
+    "z_star\n",
+    "\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "We note that the optimal level of taxable income depends on the marginal tax rate, the potential earnings and the elasticity of taxable income with respect to the net-of-tax rate. In the special case where the individual face no taxes, i.e. where $m=0$, his taxable income will equal his potential earnings ($z _i ^* = \\alpha _i$). \n",
+    "Furthermore, we note that the taxable income is lowered more due to an increase in the tax rate when the elasticity of taxable income is high. "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Graphical solution\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "We can show how people change behaviour due to a change in the marginal tax rate. As noticed before, the marginal tax rate and the elasticity of taxable income affect how much people deviate from their potential earnings. This can be shown in a graph where one can examine the changes in taxable income when the parameters are changed. In order to do that, we need to define different functions."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "First, we import the `numpy`-package. Afterwards, we define a function for the budget constraint and the utility function. In the utility function, we insert the solution given by $z^*$ instead of $z$. We are then possible to determine the optimal consumption level which is a function of the optimal taxable income. Finally, we isolate consumption and keep utility fixed in order to draw an indifference curve ."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# 1) Import the numpy-package.\n",
+    "import numpy as np\n",
+    "\n",
+    "# 2) Define the budget constraint.\n",
+    "def budget_con_fuc(m):\n",
+    "    return (1-m)*z\n",
+    "budget_con = np.array(range(2))\n",
+    "\n",
+    "# 3) Define the utility function. \n",
+    "def value_of_choice(alpha, epsilon, m):\n",
+    "    \n",
+    "    # The resulting utility is\n",
+    "    utility_f = (1-m)*(alpha*(1-m)**epsilon) - alpha/(1+1/epsilon)*(alpha*(1-m)**epsilon/alpha)**(1+1/epsilon)   \n",
+    "    return utility_f\n",
+    "\n",
+    "# 3) Define the consumption level determined by the optimal taxable income.\n",
+    "def y(budget_con, m): \n",
+    "    return budget_con*(1-m)\n",
+    "\n",
+    "# 4) Define the consumption level as a function of the fixed utility and taxable income.\n",
+    "def f(budget_con, alpha, epsilon, m):\n",
+    "    u = value_of_choice(alpha, epsilon, m)\n",
+    "    return u + alpha/(1+1/epsilon)*(budget_con/alpha)**(1+1/epsilon)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "We want to plot the utility function, the budget constraint and the optimal taxable income. The optimal taxable income is given by the point where the budget constraint is tangent to the utility function (which is marked with a bullet on the graph). \n",
+    "\n",
+    "In order to do so, we import the `matplotlib`-package in order to plot the graphs. Furthermore, we import the `ipywidgets`-package in order to generate sliders. "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Import packages in order to plot the graph and generate sliders. \n",
+    "import matplotlib.pyplot as plt\n",
+    "import ipywidgets as widgets"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "application/vnd.jupyter.widget-view+json": {
+       "model_id": "ae95a2f375a1438690ca57f00de8ca87",
+       "version_major": 2,
+       "version_minor": 0
+      },
+      "text/plain": [
+       "interactive(children=(IntSlider(value=4910, description='alpha', max=10000, min=10, step=100), FloatSlider(val…"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "# 1) Define a custom value of the parameters of interest.\n",
+    "tax     = 0.4\n",
+    "epsilon = 1\n",
+    "alpha   = 1\n",
+    "\n",
+    "# 2) Generate the graph.     \n",
+    "def graph(alpha, epsilon, tax):\n",
+    "    plt.figure(figsize=(12,6))\n",
+    "    budget_con = np.arange(0.0, alpha, 1)\n",
+    "    plt.plot(budget_con, f(budget_con, alpha, epsilon, tax))\n",
+    "    plt.plot(budget_con, y(budget_con, tax))\n",
+    "    z_opt = (alpha*(1-tax)**epsilon)\n",
+    "    print(\"The optimal taxable income is: \" + str(round(z_opt)))\n",
+    "    plt.plot(z_opt, (1-tax)*z_opt, 'ro')\n",
+    "    plt.ylabel('Consumption')\n",
+    "    plt.xlabel('Taxable income')\n",
+    "    plt.legend(['Indifference curve','Budget constraint', 'Optimum'])\n",
+    "    return    \n",
+    "\n",
+    "# 3) Generate the sliders. \n",
+    "widgets.interact(graph,\n",
+    "    alpha=(10,10000,100), epsilon=(0.01,1.0,0.01), tax=(0.0,1,0.01) \n",
+    ");"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "The graph confirms the conclusion from section 3.1. \n",
+    "$z^*$ increases when $\\alpha$ increases. This is obvious since one gets a higher income when his potential earnings increases everything else equal. \n",
+    "$z^*$ decreases when $m$ increases. When the marginal tax rate increases, leisure is cheaper, and hence people tend to substitute work for leisure which lowers the taxable income. \n",
+    "$z^*$ decreases when $\\epsilon$ increases. When the elasticity of taxable income increases, people respond more to a change in the marginal tax rate. The greater the elasticity, the greater the response. Hence, an increase in the elasticity of taxable income lowers taxable income due to larger labor supply responses. "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Further analysis"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Previously, we considered a proportional tax system where everyone paid faced the marginal tax rate for any income level. However, most Western contries have a progressive tax system where people with high income levels face a higher marginal tax rate. Thus, we examine the optimal taxable income when the individual face a tax system where the marginal tax rate to the right of a threshold is higher than to the left of the threshold."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Extension of the baseline model"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "We consider the same equations as in section 2. However, the function which defines the tax payment is different now. The tax payment is given by\n",
+    "\n",
+    "$T_{new} (z_i) = min(z_i, K) * m + max(z_i - K, 0) * m_H$\n",
+    "\n",
+    "where $K$ is the threshold, and $m_H$ is the marginal tax rate faced by high-income earners (people with an income above the threshold). \n",
+    "\n",
+    "We note that if $z_i \\leq K$ then there is no change before, and the optimal tax rate is identical to the solution in section 3. An individual with an income above the threshold face the tax payment \n",
+    "\n",
+    "$T_{H} (z_i) = K * m + (z_i - K) * m_H$"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Numerical analysis"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "As mentioned in section 4.1, the introduction of the new tax system does not change anything from before for people with an income below the threshold. High-income earners respond in another way then before, and hence we calculate the optimal taxable income for them. \n",
+    "The steps in this section is in most cases identical with the steps in section 3.2"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "First, we define the new symbols and the new tax system for high-income earners. "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "image/png": "iVBORw0KGgoAAAANSUhEUgAAAQsAAAAUBAMAAABojAWbAAAAMFBMVEX///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAv3aB7AAAAD3RSTlMAIu+7q82J3ZlmRDJUdhDTAJzgAAAACXBIWXMAAA7EAAAOxAGVKw4bAAADjElEQVRIDb1WTWhUVxT+Xkze/GTyMqDQlZhNKrhKaV1UajNS90nBmGKRjCvbRXAoSFAqHRHL7DoVdCPiAyVZGigorjKQQt11oKG6KR1sXXc0RmLUxO/cd8+7cydqrAvP4p1zvnO+b847782dAbosqBsgV+zC3ym1Yltwf2Y9ePTJ2PLBqbK2brfBAQWcX9o41MLYyrxDtopUTPpez+7lLYdl9FSQTXbA7i+t9APrO90Kk8X/syYVMyKvZUfjQC+wq4pcbD8uV7VB2LSBc/knQK7h8iQqbG7UllRMAI/tk6aB28DVBgZalprRm42GLOJcuIbomEtt5Ct65VRMUI/tk+4D88BYC3mlf6ABjqSRBn1t3NTYeV/R4YycGBOP7ZP6YtaxWy7W7tHnv4u5o5pCqR8cT7Y8e2DnUnP2jzgpqKKPmpqIpaZsAygJc3v668hWCQarvORHPwvGjgKfMv7nr9oIcJERwgljVYlxo3yiIr78cTN6EReGJAZU0aHXlhs7VposiVhqyjaAkqL9987xhRsnmHsulb+BhSLwPcMW5Iv2m6CenfgzK639jZMIniDXTopWsQMdaKP/oRRFLDXLTvJ0DAQjvJMK0d51KX0BXKDbI3H/57wsSOTZVD2QL10UraGwjl7yZVuTwxMTJQ9lJTfEoohFkzO0k/OAZRN2JCa/tPh5bQY8NmgfAlxPMsZ1ATaPsQyMUg+FNrIV9DSlyz0Uh/aUkR2RkrknCcSUbRLdBvIl5mYMHhuceg04Qy97LJR4wZxcQrmXmZmSxPkXfD0kyo4jU8aNYouxG8Oh/8XImBk7H0rK9kj4VdJ8hRceGxRbrdU4iXmr7gAl+4oSSS18BmTkAfJu+Unng4Yp6Y059Pda7adYap2vaMr2SIWqnJ/mFR1tsRJWkG/Tf8MVnfr2bgz8yMyzDOsDPEixK8ZV4HCYVHUMhx7n1kyNYqmlbIMo6dalK6e53jLCvRuHuMG+qkxiHkUWF44w+jpVSIJ/px43cXfjI9OzBNy5nOCqyIdo0a8ATkIjpObYBlFSNTcc88PntW2wLpNw60WLBDLU25gqut6nACehpWKuZiOf5E5bnhmDDfYk5ySDsGkZW7lIB9dGOTPkfOkQ01LqfdK04uEPZwuj+yTj0o296ofelrZwx1eLi8uxaVKxNzPkh77b9J/K2yl0s7tyFeuCu9Jt3ftkPaibpvf8J/AlIk4FSuXflAcAAAAASUVORK5CYII=\n",
+      "text/latex": [
+       "$$T_{H}(z) = K m + m_{H} \\left(- K + z\\right)$$"
+      ],
+      "text/plain": [
+       "T_{H}(z) = K⋅m + m_H⋅(-K + z)"
+      ]
+     },
+     "execution_count": 12,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# 1) Define symbols.\n",
+    "T_H_z   = sm.symbols('T_{H}(z)')\n",
+    "m_H     = sm.symbols('m_H')\n",
+    "Kn      = sm.symbols('K')\n",
+    "\n",
+    "# 2) Define new tax system.\n",
+    "taxhigh = sm.Eq(T_H_z, mtax*Kn + m_H*(z-Kn))\n",
+    "taxhigh"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "We insert the new function of tax payment into the budget constraint."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "image/png": "iVBORw0KGgoAAAANSUhEUgAAAREAAAARBAMAAAAIzYUJAAAAMFBMVEX///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAv3aB7AAAAD3RSTlMAiXYyIt1Uze+rmRC7ZkTTotXTAAAACXBIWXMAAA7EAAAOxAGVKw4bAAADDElEQVRIDa1VTWgTQRh9m59Nk202a1HEU9aCh4rYeNCT4CIqeGoUSj2ZxZNKoVEpS7209dKblCJ4UGgOSiEojSCIXhqKeBJbFUQEcXvoTUhaq8E2bfxmd/YnTVda7QeZ+fa9903efDuZAH+JrsZQCZO1TIAkNFl7gHjjVgC9q3CNVuvXApdM5QHxdSC9i4S8BCT1zQuKqoNUFOCT8/Av85XtFgkbkPa2iD0naRPPtBZ+B8C2ncSqONa6rudkGGHqyn/EJicdnUFHMpVPFtj3LNw73aUuHDFZTidDtSYaavjCUvnAmc4JueOdAzfPzcWMW7wbnrc1jhMbOavH8oBgWFGwFXysKOksS5W3qrRsiiM27DqRl4SfDBLaZzFzFFfJ09ybyORNW+aMXvH3un6+pkKaPfyEk9wJR0YR152qTXP6YOIXQWG9D5ElJKs27ToRlpVpnbAT0Tx6FHyjtBs4pdHsha84VEV4BZAQKXPecWIhiTWvys6kwV6KvgwwPB9hv2NJ2oC4hniZcurd4JhhjDNpbB09eZpLMyYGSnhIKX0+Mwov2Bq9dNX4immB5AgjT5bYuN8wLhnGEEstpK1spVsOdWCODEGsIpFFm2qL3J6kymj/wbAB4DFwh7JRwOm8LfYXtylIlAmWrX0wnvfERmYUBkGw9tDrahgmLwMVhiTyiCqoaCWGeie2okL+zZAp4ALkFQnUPFxkiC+8YmpdVCXmmss6TiwkNQ/oLtWUCLThKHt5tBlaZSpi69yepDNAjrkbZRYS+XMQV4tFMtMUXvFAsTht0k4KiHMFd2IjiXG8ohW3imgVCNE1ix6THccbgi1yneTouVsBIhvsNMcUBUIWMhU1hVe8j1pM1PH3Hy5zBXfCkT1f1aZK9+Hl8G8Vhxr0v7IIdAHXP9oUdyLdb0wglKtrkLMIjUN8mkGswMw0h1d8GyAzKCTHTC7hTnwIJ7Y3uT1pldOrJjNBsQ6QGX9wJ35oJ7mkBarpLknpQSy7S9j15IvnvnxXUyH3SJwLuPTpzaxq/XUz8Av/AMhv26Pe9+xCAAAAAElFTkSuQmCC\n",
+      "text/latex": [
+       "$$c = - K m + K m_{H} - m_{H} z + z$$"
+      ],
+      "text/plain": [
+       "c = -K⋅m + K⋅m_H - m_H⋅z + z"
+      ]
+     },
+     "execution_count": 13,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# 1) Isolate T_z in the tax payment (this is done already, but to make sure, we run this line of code).\n",
+    "tax_high_solve = sm.solve(taxhigh, T_H_z)\n",
+    "\n",
+    "# 2) Define that we want the tax payment substituted into the budget constraint.\n",
+    "budget_constraint_high_sub = budget_constraint.subs(T_z, tax_high_solve[0])\n",
+    "\n",
+    "# 3) Ensure that the budget constraint is correct after the substitution. \n",
+    "budget_constraint_high_sub"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "We insert the new budget constraint into the utility function."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 14,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "image/png": "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\n",
+      "text/latex": [
+       "$$- K m + K m_{H} - \\frac{\\alpha \\left(\\frac{z}{\\alpha}\\right)^{1 + \\frac{1}{\\epsilon}}}{1 + \\frac{1}{\\epsilon}} - m_{H} z + z$$"
+      ],
+      "text/plain": [
+       "                        1            \n",
+       "                    1 + ─            \n",
+       "                        ε            \n",
+       "                 ⎛z⎞                 \n",
+       "               α⋅⎜─⎟                 \n",
+       "                 ⎝α⎠                 \n",
+       "-K⋅m + K⋅m_H - ────────── - m_H⋅z + z\n",
+       "                     1               \n",
+       "                 1 + ─               \n",
+       "                     ε               "
+      ]
+     },
+     "execution_count": 14,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# 1) Isolate c in the budget constraint (this is done already, but to make sure, we run this line of code).\n",
+    "budget_constraint_high_solve = sm.solve(budget_constraint_high_sub, c)\n",
+    "\n",
+    "# 2) Define that we want the budget constraint substituted into the utility function.\n",
+    "utility_high_sub = utility.subs(c, budget_constraint_high_solve[0])\n",
+    "\n",
+    "# 3) Ensure that the utility function is correct after the substitution. \n",
+    "utility_high_sub"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "We differentiate the utility function with respect to taxable income in order to derive the optimal level of taxable income. "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "image/png": "iVBORw0KGgoAAAANSUhEUgAAAIYAAAAXBAMAAAA8bSpEAAAAMFBMVEX///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAv3aB7AAAAD3RSTlMAdt3NMolEmSIQ71S7ZqvC3fgDAAAACXBIWXMAAA7EAAAOxAGVKw4bAAACB0lEQVQ4EcWUv0sbYRjHvybcedcYYzIonYzWBmwHoynSSbKKoFcscWqR/gXRYuNg9XASFAy4SBd1sJPgj9FFHBRBigEHQSjqZIeCWWqFUujz/rh77xXhLA4+kOT7PM/3/dxz790b4NGjf+TBI5jtHJF6pUhWRelQFXeB6N5bHGdQCJjnAjpc/gASebIVNMbr8IXSsV0GFoB6NrjGiBfDGJvCYF9eEcNogD2SvMWIuPdkAM3EsJeFXZtjOgwBOYdgoDvAMJKfeNakGOb7meSF+WZfVbjSGSXRZXNYGXxxZyn/plYYdbtYasQ2YB4dWledsqMzjhXjiYO64lPKXypGXySLeQdnVGkGBlzZ0RlbosrmmCqjNutQ/pX2qauV4lm+vDSMnTJ+UpU+p9w8mMu9yOV6uGZ7igEu+bNdo8e0ymrE8GMHGAVWKF8FJryyPodi2L+I8Ye5AveCj8BzmDc27Gug5W7GB1Fm9/KXGFWWBvaUrk6La7OziP0ulQgjQp8jsKeTwEm1l0xDnhWwrhGvIuo4MNIw+RVYU2eMCT+bw3j3HWMNlMvZWMdMo+Ycsc95RIsMI8NjTK73VAB54hnDj4jrSyUSFYaR4TF4aqVFVWPceebo3UhsSAQWPcF+6czx0Bg4EMXgt9ExHjvaD1Z8TWefh86Y8/v3Ed4VC0i1Kf9//xeypanMP1H4c+Nn6ecWAAAAAElFTkSuQmCC\n",
+      "text/latex": [
+       "$$\\left [ \\alpha \\left(- m_{H} + 1\\right)^{\\epsilon}\\right ]$$"
+      ],
+      "text/plain": [
+       "⎡            ε⎤\n",
+       "⎣α⋅(-m_H + 1) ⎦"
+      ]
+     },
+     "execution_count": 15,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# 1) Define that we want to calculate the derivate of the utility function with respect to taxable income.\n",
+    "foc_high = sm.diff(utility_high_sub, z)\n",
+    "\n",
+    "# 2) Define that we want to isolate for taxable income to derive z*.\n",
+    "z_star_high = sm.solve(foc_high, z)\n",
+    "\n",
+    "# 3) Define the optimal level of taxable income as a Python-function. \n",
+    "z_star_func_high = sm.lambdify((m_H, alp, eps), z_star_high)\n",
+    "\n",
+    "# 4) Examine the optimal level of taxable income.\n",
+    "z_star_high"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "We denote this level of optimal taxable income as $z_{high} ^*$. We note that this is the same optimal taxable income as in section 3.1 besides the marginal tax rate. However, it is not possible in this function to show that high-income earners tend to earn an income which is identical to the threshold. This is called \"bunching\" since people tend to bunch at kink points. If it people with an income above the threshold that $z_{high}^*<K$ and $z^*>K$ then people will bunch at the kink. This is possible to show in a graphical analysis. "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Graphical analysis"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "In this section we will analyse the behavior of the worker grahpically. First, we will find the maxmimum utility of the worker. "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 37,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "application/vnd.jupyter.widget-view+json": {
+       "model_id": "d302a32927b44c6a8d547d5d267ec9e0",
+       "version_major": 2,
+       "version_minor": 0
+      },
+      "text/plain": [
+       "interactive(children=(IntSlider(value=1000, description='alpha', max=2000, min=10, step=10), FloatSlider(value…"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "# 1) Define a function that return the maximum utility level given alpha, epsilon, low tax rate, high tax rate and the threshold\n",
+    "def value_of_choice_2(alpha, epsilon, tax_low, tax_high, kink):\n",
+    "    \n",
+    "    # 1.1) If the alpha is below the income threshold, the maximum utility is found using the old budget constraint without the tax rate for high income earners\n",
+    "    if alpha < kink:\n",
+    "        global z_opt_new\n",
+    "        z_opt_new = (alpha*(1-tax_low)**epsilon)\n",
+    "        utility_f = (1-tax_low)*(alpha*(1-tax_low)**epsilon) - alpha/(1+1/epsilon)*(alpha*(1-tax_low)**epsilon/alpha)**(1+1/epsilon)\n",
+    "        return utility_f\n",
+    "    \n",
+    "    # 1.2) Find the maximum utility if alpha is above the threshold\n",
+    "    if alpha >= kink:\n",
+    "        \n",
+    "        # 1.3) Find the utility for the budget constaint only below the threshold\n",
+    "        utility_l = (1-tax_low)*(alpha*(1-tax_low)**epsilon) - alpha/(1+1/epsilon)*(alpha*(1-tax_low)**epsilon/alpha)**(1+1/epsilon)\n",
+    "        z_opt_low = (alpha*(1-tax_low)**epsilon)\n",
+    "        \n",
+    "        # 1.4) If the optimal income earned on the low budget set is above the threshold the low utility should be evaluated in the threshold\n",
+    "        if alpha*(1-tax_low)**epsilon>kink:\n",
+    "            utility_l = (1-tax_low)*kink - alpha/(1+1/epsilon)*(kink/alpha)**(1+1/epsilon)\n",
+    "            z_opt_low = kink\n",
+    "            \n",
+    "        # 1.5) Find the utility for the budget constaint only above the threshold\n",
+    "        utility_h = (1-tax_low)*kink+(1-tax_high)*(alpha*(1-tax_high)**epsilon-kink) - alpha/(1+1/epsilon)*(alpha*(1-tax_high)**epsilon/alpha)**(1+1/epsilon)\n",
+    "        z_opt_high = (alpha*(1-tax_high)**epsilon)\n",
+    "        \n",
+    "        # 1.4) If the optimal income earned on the high budget set is below the threshold the high utility should be evaluated in the threshold\n",
+    "        if alpha*(1-tax_high)**epsilon<kink:\n",
+    "            utility_h = (1-tax_low)*kink - alpha/(1+1/epsilon)*(kink/alpha)**(1+1/epsilon)\n",
+    "            z_opt_high = kink\n",
+    "        utility_g = max(utility_l, utility_h)\n",
+    "        if utility_g==utility_l:\n",
+    "            z_opt_new=z_opt_low\n",
+    "        else:\n",
+    "            z_opt_new=z_opt_high\n",
+    "        return utility_g\n",
+    "\n",
+    "# 2) Define the indifference curve\n",
+    "def indif_curve(budget_con, alpha, epsilon, tax_low, tax_high, k):\n",
+    "    u = value_of_choice_2(alpha, epsilon, tax_low, tax_high, k)\n",
+    "    return u + alpha/(1+1/epsilon)*(budget_con/alpha)**(1+1/epsilon)\n",
+    "\n",
+    "\n",
+    "# 3) Define a function that makes a plot with the indifference curve, the budget constraint and the optimal behaviour.\n",
+    "def graph(alpha, epsilon, tax_low, tax_high, kink):\n",
+    "    plt.figure(figsize=(12,6))\n",
+    "    budget_con = np.arange(0.0, alpha*1.1+100, 1)\n",
+    "    plt.plot(budget_con, indif_curve(budget_con, alpha, epsilon, tax_low, tax_high, kink))\n",
+    "    \n",
+    "    lower = np.arange(0.0, kink, 1)\n",
+    "    plt.plot(lower, lower*(1-tax_low))\n",
+    "    \n",
+    "    upper = np.arange(kink, alpha*1.1+100, 1)\n",
+    "    plt.plot(upper, (1-tax_low)*kink+(upper-kink)*(1-tax_high))\n",
+    "    \n",
+    "    print(\"The optimal taxable income is: \"+str(round(z_opt_new)))\n",
+    "    plt.plot(z_opt_new, utility_function(z_opt_new, alpha, epsilon, tax_low, tax_high, kink), 'ro')\n",
+    "    plt.ylabel('Consumption')\n",
+    "    plt.xlabel('Taxable income')\n",
+    "    plt.legend(['Indifference curve','Budget constraint (low marginal tax)', 'Budget constraint (high marginal tax)', 'Optimum'])\n",
+    "    return    \n",
+    "\n",
+    "# 4) Plot the graph with interactive widgets \n",
+    "widgets.interact(graph,\n",
+    "    alpha=(10,2000,10), epsilon=(0.01,1.0,0.01), tax_low=(0.0,1,0.01), tax_high=(0.1,1,0.01), kink=(10,1000,10)\n",
+    ");"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "We note some of the same results as in the conclusion in section 3.2. In this extended model, we note that people with a potential income slightly above the threshold will bunch at the kink. This is due to the fact that people are unwilling to work at the high marginal tax rate, but will like to work at the low marginal tax rate. Thus, they maximize their utility by having a taxable income exactly equal to the threshold. "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Conclusion"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "In this project, we have examined how people react to changes in the marginal tax rate. We have found that a larger marginal tax rate and a higher elasticity affect the labor supply negatively in a proportional tax system. This is shown analytically and by a graph, where one can change the parameter values.\n",
+    "\n",
+    "Most Western countries apply a progressive tax system, where high-income earners face a greater marginal tax rate. We show analyticcaly that initial top tax payers only are affected by the largest marginal tax rate. We have shown in the graph that people will tend to bunch at the kink, so they earn the highest possible income without having to pay the largest marginal tax rate. This is in line with the literature. "
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.7.1"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}
